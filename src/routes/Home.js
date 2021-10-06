@@ -7,6 +7,7 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
+import Nweet from "components/Nweet";
 
 const Home = ({ userObj }) => {
   const [nweet, setNweet] = useState("");
@@ -34,7 +35,7 @@ const Home = ({ userObj }) => {
     await addDoc(collection(dbService, "nweets"), {
       text: nweet,
       createdAt: Date.now(),
-      userId: userObj.uid,
+      creatorId: userObj.uid,
     });
     setNweet("");
   };
@@ -52,14 +53,12 @@ const Home = ({ userObj }) => {
         <input type="submit" value="Nweet" />
       </form>
       <ul>
-        {nweets.map((nwe) => (
-          <li key={nwe.id}>
-            {nwe.text} -------created at:{" "}
-            {new Date(nwe.createdAt)
-              .toISOString()
-              .slice(0, -1)
-              .replace("T", " ")}
-          </li>
+        {nweets.map((nweetObj) => (
+          <Nweet
+            key={nweetObj.id}
+            nweetObj={nweetObj}
+            isOwner={userObj.uid === nweetObj.creatorId}
+          />
         ))}
       </ul>
     </div>

@@ -12,6 +12,7 @@ import Nweet from "components/Nweet";
 const Home = ({ userObj }) => {
   const [nweet, setNweet] = useState("");
   const [nweets, setNweets] = useState([]);
+  const [attachment, setAttachment] = useState(null);
 
   useEffect(() => {
     onSnapshot(
@@ -32,6 +33,7 @@ const Home = ({ userObj }) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (!nweet) return;
     await addDoc(collection(dbService, "nweets"), {
       text: nweet,
       createdAt: Date.now(),
@@ -39,6 +41,23 @@ const Home = ({ userObj }) => {
     });
     setNweet("");
   };
+
+  const onFileChange = (e) => {
+    const {
+      target: { files },
+    } = e;
+    const theFile = files[0];
+    const reader = new FileReader();
+    reader.onloadend = (event) => {
+      const {
+        currentTarget: { result },
+      } = event;
+      setAttachment(result);
+    };
+    reader.readAsDataURL(theFile);
+  };
+
+  const onClearAttachment = () => setAttachment(null);
 
   return (
     <div>
@@ -50,7 +69,14 @@ const Home = ({ userObj }) => {
           value={nweet}
           onChange={onChange}
         />
+        <input type="file" accept="image/*" onChange={onFileChange} />
         <input type="submit" value="Nweet" />
+        {attachment && (
+          <div>
+            <img src={attachment} alt="Preview" width="50px" height="50px" />
+            <button onClick={onClearAttachment}>Clear</button>
+          </div>
+        )}
       </form>
       <ul>
         {nweets.map((nweetObj) => (

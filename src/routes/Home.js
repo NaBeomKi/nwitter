@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { dbService, storageService } from "firebase";
 import {
   collection,
@@ -7,7 +7,7 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
-import { ref, uploadString } from "firebase/storage";
+import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
 import Nweet from "components/Nweet";
 
@@ -15,6 +15,7 @@ const Home = ({ userObj }) => {
   const [nweet, setNweet] = useState("");
   const [nweets, setNweets] = useState([]);
   const [attachment, setAttachment] = useState(null);
+  const fileInput = useRef();
 
   useEffect(() => {
     onSnapshot(
@@ -35,15 +36,28 @@ const Home = ({ userObj }) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    // await addDoc(collection(dbService, "nweets"), {
-    //   text: nweet,
-    //   createdAt: Date.now(),
-    //   creatorId: userObj.uid,
-    // });
-    const fileRef = ref(storageService, `${userObj.uid}/${uuidv4()}`);
-    const response = await uploadString(fileRef, attachment, "data_url");
-    console.log(response);
+    let attachmentUrl = null;
+
+    if (attachment) {
+      const attachmentRef = ref(storageService, `${userObj.uid}/${uuidv4()}`);
+      const response = await uploadString(
+        attachmentRef,
+        attachment,
+        "data_url"
+      );
+      attachmentUrl = await getDownloadURL(response.ref);
+    }
+
+    const nweetObj = {
+      text: nweet,
+      createdAt: Date.now(),
+      creatorId: userObj.uid,
+      attachmentUrl,
+    };
+    await addDoc(collection(dbService, "nweets"), nweetObj);
+
     setNweet("");
+    onClearAttachment();
   };
 
   const onFileChange = (e) => {
@@ -61,7 +75,10 @@ const Home = ({ userObj }) => {
     reader.readAsDataURL(theFile);
   };
 
-  const onClearAttachment = () => setAttachment(null);
+  const onClearAttachment = () => {
+    setAttachment(null);
+    fileInput.current.value = null;
+  };
 
   return (
     <div>
@@ -73,7 +90,12 @@ const Home = ({ userObj }) => {
           value={nweet}
           onChange={onChange}
         />
-        <input type="file" accept="image/*" onChange={onFileChange} />
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          onChange={onFileChange}
+        />
         <input type="submit" value="Nweet" />
         {attachment && (
           <div>

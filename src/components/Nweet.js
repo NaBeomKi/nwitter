@@ -1,6 +1,7 @@
 import React, { memo, useState } from "react";
 import { doc, deleteDoc, updateDoc } from "firebase/firestore";
-import { dbService } from "firebase";
+import { dbService, storageService } from "firebase";
+import { deleteObject, ref } from "firebase/storage";
 
 const Nweet = memo(({ nweetObj, isOwner }) => {
   const [editing, setEditing] = useState(false);
@@ -10,6 +11,10 @@ const Nweet = memo(({ nweetObj, isOwner }) => {
     const ok = window.confirm("Are you sure you want to delete this nweet?");
     if (ok) {
       await deleteDoc(doc(dbService, `nweets/${nweetObj.id}`));
+      if (nweetObj.attachmentUrl) {
+        const attachmentRef = ref(storageService, nweetObj.attachmentUrl);
+        await deleteObject(attachmentRef);
+      }
     }
   };
 
@@ -50,6 +55,9 @@ const Nweet = memo(({ nweetObj, isOwner }) => {
         <>
           <span>
             {nweetObj.text} -------created at:{" "}
+            {nweetObj.attachmentUrl && (
+              <img src={nweetObj.attachmentUrl} alt="" width="50" height="50" />
+            )}
             {new Date(nweetObj.createdAt)
               .toISOString()
               .slice(0, -1)

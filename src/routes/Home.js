@@ -14,7 +14,7 @@ import Nweet from "components/Nweet";
 const Home = ({ userObj }) => {
   const [nweet, setNweet] = useState("");
   const [nweets, setNweets] = useState([]);
-  const [attachment, setAttachment] = useState(null);
+  const [attachment, setAttachment] = useState("");
   const fileInput = useRef();
 
   useEffect(() => {
@@ -76,7 +76,7 @@ const Home = ({ userObj }) => {
   };
 
   const onClearAttachment = () => {
-    setAttachment(null);
+    setAttachment("");
     fileInput.current.value = null;
   };
 

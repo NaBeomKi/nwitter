@@ -2,6 +2,8 @@ import React, { memo, useState } from "react";
 import { doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { dbService, storageService } from "firebase";
 import { deleteObject, ref } from "firebase/storage";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 const Nweet = memo(({ nweetObj, isOwner }) => {
   const [editing, setEditing] = useState(false);
@@ -34,11 +36,11 @@ const Nweet = memo(({ nweetObj, isOwner }) => {
   };
 
   return (
-    <li key={nweetObj.id}>
+    <li key={nweetObj.id} className="nweet">
       {editing ? (
         isOwner && (
           <>
-            <form onSubmit={onSubmit}>
+            <form onSubmit={onSubmit} className="container nweetEdit">
               <input
                 type="text"
                 value={newNweet}
@@ -46,9 +48,11 @@ const Nweet = memo(({ nweetObj, isOwner }) => {
                 required
                 placeholder="Edit your nweet"
               />
-              <input type="submit" value="Update" />
+              <input type="submit" value="Update" className="formBtn" />
             </form>
-            <button onClick={toggleEditing}>Cancle</button>
+            <span onClick={toggleEditing} className="formBtn cancelBtn">
+              Cancle
+            </span>
           </>
         )
       ) : (
@@ -56,7 +60,7 @@ const Nweet = memo(({ nweetObj, isOwner }) => {
           <span>
             {nweetObj.text} -------created at:{" "}
             {nweetObj.attachmentUrl && (
-              <img src={nweetObj.attachmentUrl} alt="" width="50" height="50" />
+              <img src={nweetObj.attachmentUrl} alt="" />
             )}
             {new Date(nweetObj.createdAt)
               .toISOString()
@@ -64,10 +68,14 @@ const Nweet = memo(({ nweetObj, isOwner }) => {
               .replace("T", " ")}
           </span>
           {isOwner && (
-            <>
-              <button onClick={onDeleteClick}>Delete</button>
-              <button onClick={toggleEditing}>Edit</button>
-            </>
+            <div className="nweet__actions">
+              <span onClick={onDeleteClick}>
+                <FontAwesomeIcon icon={faTrash} />
+              </span>
+              <span onClick={toggleEditing}>
+                <FontAwesomeIcon icon={faPencilAlt} />
+              </span>
+            </div>
           )}
         </>
       )}
